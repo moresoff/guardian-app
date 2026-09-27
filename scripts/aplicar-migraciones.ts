@@ -33,12 +33,15 @@ function cargarEnvLocal() {
 async function main() {
   cargarEnvLocal();
 
-  const url = process.env.DATABASE_URL;
-  if (!url) {
+  // Las migraciones van por la conexión en modo sesión: el pooler en modo
+  // transacción devuelve una conexión distinta entre sentencias, y una
+  // migración necesita una sola para correr entera o no correr.
+  const url = process.env.DIRECT_URL || process.env.DATABASE_URL;
+  if (!url || url.includes("[YOUR-PASSWORD]")) {
     console.error(
-      "Falta DATABASE_URL en .env.local.\n" +
-        "Sale de Supabase → Project Settings → Database → Connection string → URI\n" +
-        "(la del pooler, puerto 6543).",
+      "Falta la contraseña de la base en .env.local.\n" +
+        "Sale de Supabase → Project Settings → Database, y reemplaza\n" +
+        "[YOUR-PASSWORD] en DATABASE_URL y en DIRECT_URL.",
     );
     process.exit(1);
   }

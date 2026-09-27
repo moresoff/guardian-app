@@ -17,8 +17,17 @@ import type { Consultar } from "@/lib/data/postgres";
 
 const global_ = globalThis as unknown as { poolGuardian?: Pool };
 
+/**
+ * Si hay una cadena de conexión de verdad.
+ *
+ * El marcador que trae la cadena de Supabase cuando se copia del panel cuenta
+ * como no configurada: con él la variable está puesta pero la contraseña no es
+ * una contraseña, y la app fallaría en cada pantalla en vez de caer al seed,
+ * que es lo que uno espera cuando todavía no terminó de configurar.
+ */
 export function hayBaseConfigurada(): boolean {
-  return Boolean(process.env.DATABASE_URL);
+  const url = process.env.DATABASE_URL;
+  return Boolean(url) && !url!.includes("[YOUR-PASSWORD]");
 }
 
 function pool(): Pool {

@@ -563,9 +563,10 @@ create unique index identificador_unico_en_proyectos_vivos
 -- clave anónima viaja al navegador, así que una tabla sin RLS es una tabla
 -- pública. Sin políticas, nadie lee nada con esa clave.
 --
--- Guardian renderiza en el servidor y accede con la service role key, que saltea
--- RLS por diseño y nunca sale del servidor. Cuando entre el login, las políticas
--- por rol se agregan acá y recién ahí tiene sentido darle lectura al cliente.
+-- Guardian renderiza en el servidor y lee con la cadena de conexión, como dueño
+-- de la base: RLS no se le aplica, y esa cadena nunca sale del servidor. Cuando
+-- entre el login, las políticas por rol se agregan acá, y recién ahí tiene
+-- sentido darle lectura al cliente con la clave publicable.
 -- ---------------------------------------------------------------------------
 
 do $$
