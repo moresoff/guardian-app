@@ -1806,7 +1806,13 @@ const aportesDelColaborador: Aporte[] = [
  * Si los dos no dieran lo mismo, la demo estaría mostrando capital que no entró.
  */
 const aportesDelResto: Aporte[] = proyectos
-  .filter((p) => p.montoRecaudadoArs > 0)
+  .filter((p) => {
+    if (p.montoRecaudadoArs <= 0) return false;
+    const deColaboradorDemo = aportesDelColaborador
+      .filter((a) => a.proyectoId === p.id)
+      .reduce((acc, a) => acc + a.montoAcreditadoArs, 0);
+    return p.montoRecaudadoArs - deColaboradorDemo > 0;
+  })
   .map((p, i) => {
     const deColaboradorDemo = aportesDelColaborador
       .filter((a) => a.proyectoId === p.id)
@@ -1816,7 +1822,7 @@ const aportesDelResto: Aporte[] = proyectos
     return {
       id: `ap-r${i + 1}`,
       proyectoId: p.id,
-      colaboradorId: "inv-otros",
+      colaboradorId: "col-otros",
       ordenSuscripcion: `GDN-2026-9${String(i + 1).padStart(5, "0")}`,
       montoComprometidoArs: resto,
       montoAcreditadoArs: resto,
@@ -1852,6 +1858,25 @@ export const colaboradores: Colaborador[] = [
     identidad: { metodo: "DNI contra RENAPER", fecha: "2026-07-15" },
     cbuDevolucion: "0000000000000000000000",
     aliasDevolucion: "lucia.ferreyra.gdn",
+  },
+  /*
+   * El resto de los colaboradores de cada proyecto, en una sola fila.
+   *
+   * La demo tiene un colaborador con nombre y el recaudado de los proyectos sale
+   * de sumar aportes acreditados, así que la diferencia tiene que estar puesta
+   * por alguien. Este es ese alguien: un agregado, no una persona. Cuando haya
+   * altas reales, desaparece y en su lugar quedan las filas de cada uno.
+   */
+  {
+    id: "col-otros",
+    nombre: "Resto de los colaboradores",
+    email: "colaboradores@ejemplo.com.ar",
+    telefono: "—",
+    cuil: "—",
+    altaAt: "2026-01-01",
+    identidad: null,
+    cbuDevolucion: "",
+    aliasDevolucion: "",
   },
 ];
 

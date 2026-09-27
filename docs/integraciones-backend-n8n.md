@@ -118,6 +118,62 @@ No decide publicaciones, no autoriza desembolsos y no ejecuta transferencias.
 Llama a la API de Guardian, que es la que aplica las reglas en transacción. Si n8n
 se cae, la operación no queda a medias: los flujos son idempotentes y se repiten.
 
+## 3 bis. Lo que ya está construido (2026-09-27)
+
+Los pasos 1 y 3 del orden de trabajo están hechos. n8n queda para más adelante;
+nada de la sección 3 se empezó.
+
+| Qué | Dónde |
+|---|---|
+| Esquema: 22 tablas, 20 enumeraciones, las tres restricciones del plan | `supabase/migrations/0001_esquema.sql` |
+| Datos de demostración, generados desde el seed de la app | `supabase/seed.sql`, con `npm run datos:seed` |
+| Contrato de la capa de datos | `src/lib/data/repositorio.ts` |
+| Implementación contra el seed | `src/lib/data/memoria.ts` |
+| Implementación contra Postgres | `src/lib/data/postgres.ts` |
+| Conexión y elección de una u otra | `src/lib/db/conexion.ts`, `src/lib/data/index.ts` |
+| Prueba que compara las dos | `npm run datos:comparar` |
+
+### Cómo elige
+
+Con `DATABASE_URL` va contra Postgres; sin esa variable, contra el seed en
+memoria. El seed no es un resto a sacar: es lo que hace que un clon recién bajado
+levante sin pedirle una base a nadie.
+
+### Por qué hay dos implementaciones y una prueba que las compara
+
+`npm run datos:comparar` corre las veinticinco consultas contra las dos y
+compara campo por campo. Si dan lo mismo con los mismos datos, enchufar la base
+no cambió lo que ven las pantallas. Corre contra un Postgres en proceso (PGlite),
+así que no hace falta ninguna base levantada ni credenciales.
+
+Esa prueba ya encontró cosas: un tipo de documento mal escrito, un campo del
+modelo que faltaba en el esquema, y media docena de listas cuyo orden dependía
+del array del seed y en una base no existe. Todas esas listas tienen ahora un
+criterio de orden explícito, igual de los dos lados.
+
+### Lo que el esquema decide y antes decidía una pantalla
+
+Además de las tres restricciones del plan, la base ahora rechaza: acreditar más
+de lo comprometido, un aporte "acreditado" con menos dinero del comprometido,
+retirar más de lo liberado, liberar más de lo recaudado, publicar sin modalidad,
+un reparto que no suma cien, una liquidación pagada sin fecha de pago, una
+discrepancia resuelta sin decir cómo, y un DT-e "verificado" sin CUVE.
+
+### Seguridad
+
+RLS habilitada en las 22 tablas y sin ninguna política, que en Supabase significa
+que la clave anónima no lee nada. La app renderiza en el servidor y entra con la
+cadena de conexión, que nunca sale de ahí. Las políticas por rol entran junto con
+el login: escribirlas antes sería escribirlas contra un usuario que no existe.
+
+### Lo que falta del backend
+
+Escribir. Todo lo de arriba es de lectura: el contrato del repositorio no tiene
+una sola función que modifique nada. `publicarProyecto`, `crearOrdenSuscripcion`,
+`registrarMovimiento`, `conciliar` y los tres pasos del desembolso necesitan
+transacción, actor y asiento de auditoría, y eso es otra capa. La tabla
+`auditoria` ya está y todavía no la escribe nadie.
+
 ## 4. Orden de trabajo sugerido
 
 1. Esquema y migraciones, con las tres restricciones de arriba.
