@@ -174,6 +174,35 @@ una sola función que modifique nada. `publicarProyecto`, `crearOrdenSuscripcion
 transacción, actor y asiento de auditoría, y eso es otra capa. La tabla
 `auditoria` ya está y todavía no la escribe nadie.
 
+## 3 ter. El MCP de Supabase (2026-09-27)
+
+`.mcp.json` deja configurado el servidor MCP de Supabase para quien trabaje en
+esta carpeta. No hay ninguna credencial en el archivo: la autorización es por
+OAuth en el navegador, contra la cuenta de quien abre la sesión.
+
+```
+https://mcp.supabase.com/mcp?project_ref=dzxkghmubhvdxktejmbe&features=database,debugging,development,docs
+```
+
+Dos decisiones que están en esa URL:
+
+- **`project_ref`** lo ata a este proyecto y apaga las herramientas de cuenta
+  —crear, pausar o borrar proyectos, ver la organización—. Un agente trabajando
+  acá no llega a ningún otro proyecto de la cuenta.
+- **`features`** deja solo cuatro grupos: base de datos, diagnóstico,
+  desarrollo y documentación. Quedan afuera *branching*, que es de plan pago, y
+  *storage*, que viene apagado de fábrica.
+
+**No está en modo solo lectura**, y es a propósito: aplicar migraciones escribe.
+La base tiene datos de demostración y ningún dato real, así que el riesgo es
+bajo. Si en algún momento hay datos de verdad, se agrega `&read_only=true` a la
+URL y las consultas pasan a correr como un usuario de Postgres sin permiso de
+escritura.
+
+Lo que el MCP **no** reemplaza es la conexión de la app: eso sigue siendo
+`DATABASE_URL` desde el servidor. El MCP es una herramienta de quien desarrolla,
+no un camino de datos de la aplicación.
+
 ## 4. Orden de trabajo sugerido
 
 1. Esquema y migraciones, con las tres restricciones de arriba.
