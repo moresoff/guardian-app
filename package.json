@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "datos:seed": "tsx scripts/generar-seed-sql.ts",
-    "datos:comparar": "tsx scripts/comparar-repositorios.ts"
+    "datos:comparar": "tsx scripts/comparar-repositorios.ts",
+    "datos:migrar": "tsx scripts/aplicar-migraciones.ts"
   },
   "dependencies": {
     "next": "16.3.6",
